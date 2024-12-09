@@ -9,6 +9,11 @@ import { Request } from 'express';
 export class AuthController {
     constructor(private authService: AuthService) { }
 
+    @Post('signup')
+    async signup(@Body() userDetails: AuthPayloadDto) {
+        return this.authService.signup(userDetails);
+    }
+
     @Post('login')
     @UseGuards(LocalGuard)
     async login(@Body() loginDto: AuthPayloadDto) {

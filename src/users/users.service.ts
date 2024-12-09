@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateUserParams, CreateUserPostParams, CreateUserProfileParams, UpdateUserParams } from 'src/utils/types';
 import { Profile } from 'src/typeorm/entities/Profile';
 import { Post } from 'src/typeorm/entities/Post';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -23,9 +24,23 @@ export class UsersService {
         return this.userRepository.findOneBy({ id })
     }
 
-    createUser(userDetails: CreateUserParams) {
-        const newUser = this.userRepository.create({ ...userDetails, createdAt: new Date() })
-        return this.userRepository.save(newUser)
+    async createUser(userDetails: CreateUserParams) {
+        const { password, username } = userDetails;
+        const existingUser = await this.userRepository.findOneBy({ username });
+
+        if (existingUser) {
+            throw new HttpException('Username already exists', HttpStatus.CONFLICT);
+        }
+
+        const hashedPassword = await hash(password, 10);
+
+        const newUser = this.userRepository.create({
+            ...userDetails,
+            password: hashedPassword,
+            createdAt: new Date(),
+        });
+
+        return this.userRepository.save(newUser);
     }
 
     updateUser(id: number, updateUserDetails: UpdateUserParams) {

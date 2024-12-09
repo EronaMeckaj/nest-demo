@@ -31,4 +31,11 @@ export class AuthService {
         return { token };
     }
 
+    async signup(userDetails: AuthPayloadDto) {
+        const newUser = await this.userService.createUser(userDetails);
+        const { password: _, ...userWithoutPassword } = newUser;
+        const token = this.jwtService.sign(userWithoutPassword);
+        return { token };
+    }
+
 }
