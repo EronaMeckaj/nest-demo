@@ -23,6 +23,6 @@ export class User {
     @JoinColumn()
     profile: Profile
 
-    @OneToMany(() => Post, (post) => post.user)
+    @OneToMany(() => Post, (post) => post.user, { cascade: true })
     posts: Post[]
 }

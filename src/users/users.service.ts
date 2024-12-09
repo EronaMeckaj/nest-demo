@@ -32,12 +32,23 @@ export class UsersService {
         return this.userRepository.update({ id }, { ...updateUserDetails })
     }
 
-    deleteUserById(id: number) {
-        return this.userRepository.delete({ id })
+    async deleteUserById(id: number) {
+        try {
+            await this.postRepository.delete({ user: { id } });
+            const result = await this.userRepository.delete({ id });
+            if (!result.affected) {
+                throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+            }
+            return { message: 'User deleted successfully' };
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+        }
     }
 
-    findUserByUsername(username: string) {
-        return this.userRepository.findOneBy({ username })
+
+    async findUserByUsername(username: string): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { username } });
+        return user;
     }
 
     async createUserProfile(id: number, createUserProfileDetails: CreateUserProfileParams) {
